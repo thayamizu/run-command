@@ -15,7 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
+    let disposable = vscode.commands.registerCommand('extension.run-command', () => {
         // The code you place here will be executed every time your command is executed
         vscode.window.showInputBox().then(executeShellCommand);
     });
@@ -23,18 +23,33 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
 }
 
-function showMessage(strings : string) {
-    vscode.window.showInformationMessage(strings);
-}
-function executeShellCommand(parameter : string) {
-    cp.exec(parameter, function(err, stdout, stderr) {
-            if (!err) {
-                showMessage(stdout);
-            }
 
+function executeShellCommand(parameter : string) {
+    let editor = vscode.window.activeTextEditor;
+    let path = vscode.workspace.rootPath;
+
+    let options = { 
+        encoding: 'utf8',
+        timeout: 0,
+        maxBuffer: 200*1024,
+        killSignal: 'SIGTERM',
+        cwd: path,
+        env: null 
+    };
+
+    let result: string = "";
+    cp.exec(parameter, options, function(err, stdout, stderr) {
+            if (!err) {
+                result += stdout;
+                result += "\n";
+            }
+    }).on('close',function() {
+        let resultDocument = vscode.window.createOutputChannel("result");
+        resultDocument.append(result);
+        resultDocument.show(true);
     });
-    
 }
+
 // this method is called when your extension is deactivated
 export function deactivate() {
 }
