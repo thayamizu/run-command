@@ -1,6 +1,6 @@
 {
-  "name": "run-command",
-  "displayName": "run command",
+  "name": "run-shell-command",
+  "displayName": "Run Shell Command",
   "description": "",
   "version": "0.0.1",
   "publisher": "crest",
@@ -17,8 +17,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "extension.run-command",
-        "title": "Run Command"
+        "command": "extension.run-shell-command",
+        "title": "Run Shell Command"
       }
     ]
   },

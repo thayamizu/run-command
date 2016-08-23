@@ -21,6 +21,8 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInputBox({placeHolder:"Please input shell command.", prompt:""} ).then(executeShellCommand);
     });
 
+    let configuraiton = vscode.workspace.getConfiguration("Run-Shell-Command");
+
     context.subscriptions.push(disposable);
 }
 
