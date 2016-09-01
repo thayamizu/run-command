@@ -21,7 +21,6 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInputBox({placeHolder:"Please input shell command.", prompt:""} ).then(executeShellCommand);
     });
 
-    let configuraiton = vscode.workspace.getConfiguration("Run-Shell-Command");
 
     context.subscriptions.push(disposable);
 }
@@ -32,15 +31,14 @@ function executeShellCommand(parameter : string) {
 
     let resultDocument = vscode.window.createOutputChannel("Shell Command Result");
     resultDocument.show(true);
-
-    var p = cp.spawn("cmd.exe", ["/c", parameter], {cwd:path, env:null});
-    var content : string = "";
-    p.stdout.on('data', function (data) {
-        let line = iconv.decode(data, "Shift_JIS");
-        content += line;
-    });
-    p.stdout.on('close', function (){
-        resultDocument.appendLine(content);
+    cp.exec(parameter,{cwd:path, env:null}, (error, stdout, stderr) => {
+        if (error) {
+            vscode.window.showErrorMessage(error.message);
+        }
+        if (stdout) {
+            let data = iconv.decode(stdout, "Shift_JIS");
+           resultDocument.appendLine(data);
+        }
     });
 }
 
