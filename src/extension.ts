@@ -42,6 +42,41 @@ function executeShellCommand(parameter : string) {
     });
 }
 
+function executeShellComandFromSelectedText(text : string)  {
+    const path = vscode.workspace.rootPath;
+
+    const resultDocument = vscode.window.createOutputChannel("Shell Command Result");
+    resultDocument.show(true);
+
+    cp.exec(text, {cwd:path, env:null}, (error, stdout, stderr)=>{
+        if (error) {
+            vscode.window.showErrorMessage(error.message);            
+        }
+
+        if (stdout) {
+            const data = iconv.decode(stdout, "Shift_JIS");
+            resultDocument.append(data);
+        }
+    });
+
+}
+
+const OUTPUT_CHANNEL_NAME : string = "Shell Command Result";
+
+function createOutputChannel() : vscode.OutputChannel {
+    let resultDocument : vscode.OutputChannel = vscode.window.createOutputChannel(OUTPUT_CHANNEL_NAME);
+    resultDocument.show(true);
+    return resultDocument;
+}
+
+function executeShellCommandFromFile(filepath : string) {
+
+}
+
+function showCommandLog() {
+
+}
+
 // this method is called when your extension is deactivated
 export function deactivate() {
 }
