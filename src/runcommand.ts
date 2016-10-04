@@ -50,16 +50,23 @@ export namespace RunCommand
 		 * executeShellCommandFromSelectedText
 		 * @param parameter : string
 		 */
-		public executeShellComandFromSelectedText(text : string)  {
+		public executeShellComandFromSelectedText()  {
+			let editor = vscode.window.activeTextEditor;
+			if (editor.selection.isEmpty) {
+				return;
+			}
+
 			const path = vscode.workspace.rootPath;
 			const resultDocument = this.createOutputChannel();
-
+			const text = editor.document.getText(new vscode.Range(
+				editor.selection.start, 
+				editor.selection.end));
 			cp.exec(text, {cwd:path, env:null}, (error, stdout, stderr)=>{
 				if (error) {
 					vscode.window.showErrorMessage(error.message);            
 				}
 				if (stdout) {
-					const data = iconv.decode(stdout, this._configuration);
+					const data = iconv.decode(stdout, this._configuration.encoding);
 					resultDocument.append(data);
 				}
 			});
@@ -96,7 +103,7 @@ export namespace RunCommand
 		/**
 		 * Encoding
 		 */
-		private _encoding : string;
+		private _encoding : string="SHIFT_JIS";
 		public get encoding() : string {
 			return this._encoding;
 		}
