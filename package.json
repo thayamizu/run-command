@@ -2,7 +2,7 @@
   "name": "run-command",
   "displayName": "Run Command",
   "description": "",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "crest",
   "engines": {
     "vscode": "^1.0.0"
@@ -18,11 +18,11 @@
     "commands": [
       {
         "command": "extension.run-command",
-        "title": "RunCommand:Run Command"
+        "title": "RunCommand: Run Command"
       },
       {
-        "command": "extension.run-command-selection",
-        "title": "RunCommand:Run Command From Selected Text"
+        "command": "extension.run-history",
+        "title": "RunCommand: Run Command From History"
       }
     ],
     "configuration": {
@@ -32,7 +32,7 @@
       {
         "run-command.encoding": {
           "type": "string",
-          "default": "Shift_JIS",
+          "default": "utf-8",
           "description": "default output encoding"
         },
         "run-command.history-size": {
