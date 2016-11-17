@@ -22,12 +22,11 @@ export function activate(context: vscode.ExtensionContext) {
             command.executeShellCommand(param);
         });
     });
-    let executeShellCommandFromSelection = vscode.commands.registerCommand('extension.run-command-selection', () => {
-        command.executeShellComandFromSelectedText();
+    let executeShellCommandFromHistory = vscode.commands.registerCommand('extension.run-history', () => {
+        command.executeShellCommandFromHistory();
     });
-
     context.subscriptions.push(executeShellCommand);
-    context.subscriptions.push(executeShellCommandFromSelection);
+    context.subscriptions.push(executeShellCommandFromHistory);
 }
 
 // this method is called when your extension is deactivated
