@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
+import * as fs from 'fs';
 var iconv = require('iconv-lite');
 
 export namespace RunCommand
@@ -14,7 +15,7 @@ export namespace RunCommand
 		 */
 		private _configuration : Configuration;
 
-		private OUTPUT_CHANNEL_NAME : string = "Shell Command Result";
+		private _commandHistory : History;
 
 		/**
 		 * constructor
@@ -22,9 +23,13 @@ export namespace RunCommand
 		constructor() {
 			try {
 				this._configuration = new Configuration('run-command');
+
+				this._commandHistory  = new History(this._configuration);
+
 			} catch (error) {
 				vscode.window.showErrorMessage(error.message);
 			}
+
 		}
 
 		/**
@@ -33,50 +38,34 @@ export namespace RunCommand
 		 */
 		public executeShellCommand(parameter : string) {
 			let path = vscode.workspace.rootPath;
-			let resultDocument = this.createOutputChannel();
+			
+			let outputChannel = this.createOutputChannel(parameter); ;
 
-			cp.exec(parameter,{cwd:path, env:null}, (error, stdout, stderr) => {
+			cp.exec(parameter,{cwd:path, encoding:this._configuration.encoding, env:null}, (error, stdout, stderr) => {
 				if (error) {
 					vscode.window.showErrorMessage(error.message);
 				}
 				if (stdout) {
-					let data = iconv.decode(stdout, this._configuration.encoding);
-					resultDocument.appendLine(data);
+					let data = iconv.decode(stdout,this._configuration.encoding);
+					outputChannel.appendLine(data);
 				}
 			});
-		}
-		
-		/**
-		 * executeShellCommandFromSelectedText
-		 * @param parameter : string
-		 */
-		public executeShellComandFromSelectedText()  {
-			let editor = vscode.window.activeTextEditor;
-			if (editor.selection.isEmpty) {
-				return;
-			}
 
-			const path = vscode.workspace.rootPath;
-			const resultDocument = this.createOutputChannel();
-			const text = editor.document.getText(new vscode.Range(
-				editor.selection.start, 
-				editor.selection.end));
-			cp.exec(text, {cwd:path, env:null}, (error, stdout, stderr)=>{
-				if (error) {
-					vscode.window.showErrorMessage(error.message);            
-				}
-				if (stdout) {
-					const data = iconv.decode(stdout, this._configuration.encoding);
-					resultDocument.append(data);
-				}
-			});
+			this._commandHistory.push(parameter);
 		}
-		
+
+		public executeShellCommandFromHistory() {
+			let commands = this._commandHistory.commandHistory;
+			vscode.window.showQuickPick(commands).then((param)=> {
+				this.executeShellCommand(param);
+			});
+		}		
 		/**
 		 * createOutputChannel
 		 */
-		private createOutputChannel() : vscode.OutputChannel {
-			let resultDocument : vscode.OutputChannel = vscode.window.createOutputChannel(this.OUTPUT_CHANNEL_NAME);
+		private createOutputChannel(param : string) : vscode.OutputChannel {
+			let outputName : string = `${param}`;
+			let resultDocument : vscode.OutputChannel = vscode.window.createOutputChannel(outputName);
 			resultDocument.show(true);
 			return resultDocument;
 		}
@@ -120,6 +109,46 @@ export namespace RunCommand
 		}
 		public set historySize(v : number) {
 			this._historySize = v;
+		}
+	}
+
+	/**
+	 * History
+	 */
+	export class History
+	{
+		/**
+		 * history Size
+		 */
+		private _historySize : number;
+		public get historySize() : number{
+			return this._historySize;
+		}
+
+		/**
+		 * command History
+		 */
+		private _commandHistory : string[];
+		public get commandHistory() : string[] {
+			return this._commandHistory;	
+		}
+
+		/**
+		 * constructor
+		 */
+		constructor(conf : Configuration) {
+				this._historySize = conf.historySize;
+				this._commandHistory = new Array<string>();
+		}
+
+		/**
+		 * push
+		 */
+		public push(command : string) {
+			if (this.commandHistory.length + 1 > this.historySize) {
+				this.commandHistory.shift();
+			}
+			this.commandHistory.push(command);
 		}
 	}
 }
